@@ -1,30 +1,5 @@
--- Pretty-print a Lua table (supports nested tables, strings, numbers, booleans)
-local function inspect(value, indent)
-	indent = indent or 0
-	local spaces = string.rep("  ", indent)
-	if type(value) == "table" then
-		local lines = { "{" }
-		for k, v in pairs(value) do
-			local key_str = type(k) == "string" and '"' .. k .. '"' or tostring(k)
-			local val_str
-			if type(v) == "table" then
-				val_str = inspect(v, indent + 1)
-			else
-				val_str = type(v) == "string" and '"' .. v .. '"' or tostring(v)
-			end
-			table.insert(lines, spaces .. "  " .. key_str .. " = " .. val_str .. ",")
-		end
-		table.insert(lines, spaces .. "}")
-		return table.concat(lines, "\n")
-	else
-		return tostring(value)
-	end
-end
-
 -- Pull in the wezterm API
 local wezterm = require("wezterm")
-local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
-local session_manager = require("wezterm-session-manager/session-manager")
 
 local config = wezterm.config_builder()
 config.set_environment_variables = {
@@ -39,17 +14,6 @@ config.enable_tab_bar = true
 wezterm.on("gui-startup", function(cmd)
 	local tab, pane, window = wezterm.mux.spawn_window(cmd or {})
 	window:gui_window():maximize()
-end)
-
--- session
-wezterm.on("save_session", function(window)
-	session_manager.save_state(window)
-end)
-wezterm.on("load_session", function(window)
-	session_manager.load_state(window)
-end)
-wezterm.on("restore_session", function(window)
-	session_manager.restore_state(window)
 end)
 
 config.keys = {
@@ -162,9 +126,6 @@ config.keys = {
 			cwd = "d:/",
 		}),
 	},
-	-- { key = "S", mods = "CTRL|SHIFT", action = wezterm.action({ EmitEvent = "save_session" }) },
-	-- { key = "L", mods = "CTRL|SHIFT", action = wezterm.action({ EmitEvent = "load_session" }) },
-	-- { key = "R", mods = "CTRL|SHIFT", action = wezterm.action({ EmitEvent = "restore_session" }) },
 	-- ctrl + shift + arrow to resize panes
 	{
 		key = "LeftArrow",
@@ -187,16 +148,6 @@ config.keys = {
 		action = wezterm.action.AdjustPaneSize({ "Down", 5 }),
 	},
 
-	-- {
-	-- 	key = "S",
-	-- 	mods = "ALT",
-	-- 	action = workspace_switcher.switch_workspace(),
-	-- },
-	-- {
-	-- 	key = "s",
-	-- 	mods = "ALT",
-	-- 	action = workspace_switcher.switch_to_prev_workspace(),
-	-- },
 	{
 		key = "1",
 		mods = "ALT",
@@ -245,34 +196,15 @@ config.keys = {
 		action = wezterm.action.ActivatePaneDirection("Down"),
 	},
 }
--- wezterm.on("gui-startup", function(cmd)
--- 	local screen = wezterm.gui.screens().active
--- 	local ratio = 1
--- 	local width, height = screen.width * ratio, screen.height * ratio
--- 	local tab, pane, window = wezterm.mux.spawn_window({
--- 		position = {
--- 			x = (screen.width - width) / 2 - 10,
--- 			y = (screen.height - height) / 2,
--- 			origin = "ActiveScreen",
--- 		},
--- 	})
--- 	window:gui_window():set_inner_size(width, height - 90)
--- end)
-
 -- or, changing the font size and color scheme.
 config.font_size = 9
 config.window_background_image = "C:/Users/MSiGAMING/Downloads/Knights-fencing.jpg"
--- config.window_background_image = "C:/Users/MSiGAMING/Downloads/knight rest.gif"
 config.window_background_image_hsb = {
 	brightness = 0.05,
 	hue = 0.1,
 	saturation = 0.8,
 }
 config.window_background_opacity = 0.9
--- config.window_background_gradient = {
--- 	orientation = "Vertical",
--- 	colors = { "000000" },
--- }
 
 -- Finally, return the configuration to wezterm:
 return config
